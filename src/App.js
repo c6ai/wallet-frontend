@@ -24,9 +24,9 @@ const CredentialDetail = React.lazy(() => import('./pages/Home/CredentialDetail'
 const Popup = React.lazy(() => import('./components/Popup'));
 const VerificationResult = React.lazy(() => import('./pages/VerificationResult/VerificationResult'));
 
-
+// Firebase root scope conflicts with PWA prototype. Commenting out for now.
 // Check that service workers are supported
-if ('serviceWorker' in navigator) {
+/*if ('serviceWorker' in navigator) {
 	window.addEventListener('load', () => {
 		navigator.serviceWorker.register('/firebase-messaging-sw.js')
 			.then(registration => {
@@ -38,7 +38,7 @@ if ('serviceWorker' in navigator) {
 				alert('Failed to register service worker. Some features may not work properly.');
 			});
 	});
-}
+}*/
 
 i18n
 	.use(initReactI18next)
