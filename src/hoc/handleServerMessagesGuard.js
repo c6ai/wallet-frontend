@@ -11,12 +11,13 @@ export default function handleServerMessagesGuard(Component) {
 	return (props) => {
 		const appToken = Cookies.get("appToken");
 
-		const [ handshakeEstablished, setHandshakeEstablished ] = useState(false);
+		const [handshakeEstablished, setHandshakeEstablished] = useState(false);
+		const [isSocketOpen, setIsSocketOpen] = useState(false);
+		const [isOnline, setIsOnline] = useState(navigator.onLine); // Check initial online status
+
 		const socket = new WebSocket(REACT_APP_WS_URL);
 		const keystore = new useLocalStorageKeystore();
 		const signingRequestHandlerService = SigningRequestHandlerService();
-		const [isSocketOpen, setIsSocketOpen] = useState(false);
-
 
 		socket.addEventListener('open', (event) => {
 			console.log('WebSocket connection opened');
@@ -34,10 +35,9 @@ export default function handleServerMessagesGuard(Component) {
 				socket.onmessage = event => {
 					try {
 						const { type } = JSON.parse(event.data.toString());
-						if (type == "FIN_INIT") {
+						if (type === "FIN_INIT") {
 							console.log("init fin")
 							setHandshakeEstablished(true);
-
 							resolve({});
 						}
 					}
@@ -49,35 +49,44 @@ export default function handleServerMessagesGuard(Component) {
 		}
 
 		useEffect(() => {
-			if (isSocketOpen) {
+			if (isOnline && isSocketOpen) { // Check if online and socket is open
 				waitForHandshake();
 				// You can perform other actions that depend on the socket being open here.
 			}
-		}, [isSocketOpen]);
+		}, [isOnline, isSocketOpen]);
 
 		socket.addEventListener('message', async (event) => {
 			try {
 				const message = JSON.parse(event.data.toString());
 				const { message_id, request } = message;
-				if (request.action == SignatureAction.createIdToken) {
+				if (request.action === SignatureAction.createIdToken) {
 					signingRequestHandlerService.handleCreateIdToken(socket, keystore, { message_id, ...request });
 				}
-				else if (request.action == SignatureAction.signJwtPresentation) {
+				else if (request.action === SignatureAction.signJwtPresentation) {
 					signingRequestHandlerService.handleSignJwtPresentation(socket, keystore, { message_id, ...request });
 				}
-				else if (request.action == SignatureAction.generateOpenid4vciProof) {
+				else if (request.action === SignatureAction.generateOpenid4vciProof) {
 					signingRequestHandlerService.handleGenerateOpenid4vciProofSigningRequest(socket, keystore, { message_id, ...request });
 				}
 			}
 			catch(e) {
+				// Handle any errors here
 			}
 		})
 
-		if (handshakeEstablished === true || !appToken) {
+		// Check for online status changes and update the state accordingly
+		window.addEventListener('online', () => {
+			setIsOnline(true);
+		});
+
+		window.addEventListener('offline', () => {
+			setIsOnline(false);
+		});
+
+		if (!isOnline || handshakeEstablished === true || !appToken) {
 			return (<Component {...props} />);
 		}
 		else {
-
 			return (<Spinner />); // loading component
 		}
 	}
