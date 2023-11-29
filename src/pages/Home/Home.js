@@ -160,15 +160,19 @@ const Home = () => {
 				 		</>
           	) : (
 							<div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20">
-								{credentials.map((credential) => (
-									<div
-										key={credential.id}
-										className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
-										onClick={() => handleImageClick(credential)}
-									>
-										<img src={credential.src} alt={credential.alt} className="w-full h-auto rounded-xl" />
-									</div>
-								))}
+								{credentials ? (
+									credentials.map((credential) => (
+										<div
+											key={credential.id}
+											className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
+											onClick={() => handleImageClick(credential)}
+										>
+											<img src={credential.src} alt={credential.alt} className="w-full h-auto rounded-xl" />
+										</div>
+									))
+								) : (
+									<></>
+								)}
 								<div
 									className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
 									onClick={handleAddCredential}
