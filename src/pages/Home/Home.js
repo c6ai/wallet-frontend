@@ -10,7 +10,7 @@ import {BsQrCodeScan} from 'react-icons/bs'
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-
+import jsonpointer from 'jsonpointer';
 import addImage from '../../assets/images/cred.png';
 
 import { useApi } from '../../api';
@@ -20,6 +20,56 @@ import CredentialDeleteButton from '../../components/Credentials/CredentialDelet
 import CredentialDeletePopup from '../../components/Credentials/CredentialDeletePopup';
 import { fetchCredentialData } from '../../components/Credentials/ApiFetchCredential';
 import QRCodeScanner from '../../components/QRCodeScanner/QRCodeScanner'; // Replace with the actual import path
+
+const SvgRender = (credential) => {
+	console.log(credential.credential.vcData)
+	const svgUrl = credential.credential.vcData.renderMethod.id;
+	const [svgContent, setSvgContent] = useState(null);
+
+	useEffect(() => {
+		const fetchSvgContent = async () => {
+			try {
+				const response = await fetch(svgUrl);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch SVG from ${svgUrl}`);
+				}
+
+				const svgText = await response.text();
+				setSvgContent(svgText);
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		fetchSvgContent();
+	}, [svgUrl]);
+
+  if (svgContent === null) {
+    return <div>Loading...</div>;
+  }
+
+  const regex = /{{([^}]+)}}/g;
+
+  const replaceText = (match, content) => {
+		console.log(match,content);
+		const res = jsonpointer.get(credential.credential.vcData,content)
+		console.log('res= ',res);
+
+		if (res) {
+				return res;
+		} else {
+				return null;
+		}
+	};
+
+  const replacedSvgText = svgContent.replace(regex, replaceText);
+
+	const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(replacedSvgText)}`;
+
+  return (
+    <img src={dataUri} alt="Rendered SVG" className="w-auto h-auto rounded-xl object-fit-cover transition-shadow shadow-md hover:shadow-lg cursor-pointer" />
+  );
+}
 
 const Home = () => {
   const api = useApi();
@@ -63,7 +113,6 @@ const Home = () => {
 	useEffect(() => {
 		const getData = async () => {
 			const temp_cred = await fetchCredentialData(api);
-			console.log(temp_cred);
 			setCredentials(temp_cred);
 		};
 		getData();
@@ -179,24 +228,29 @@ const Home = () => {
 							)}
 				 		</>
           	) : (
-							<div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20">
+							<div className="flex gap-20">
 								{credentials.map((credential) => (
 									<div
 										key={credential.id}
-										className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
+										className=" flex justify-center"
 										onClick={() => handleImageClick(credential)}
 									>
-										<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+										{credential.vcData.renderMethod ?(
+											<SvgRender credential={credential}/>
+										):(
+
+											<img src={credential.src} alt={credential.alt} className=" object-contain rounded-xl transition-shadow shadow-md hover:shadow-lg cursor-pointer" />
+										)}
 									</div>
 								))}
 								<div
-									className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
+									className="relative "
 									onClick={handleAddCredential}
 								>
 									<img
 										src={addImage}
 										alt="add new credential"
-										className="w-full h-auto rounded-xl opacity-100 hover:opacity-120"
+										className="w-auto h-full rounded-xl opacity-100 hover:opacity-120 rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg"
 									/>
 									<div className="absolute inset-0 flex flex-col items-center justify-center text-center">
 										<BsPlusCircle size={60} className="text-white mb-2 mt-4" />
