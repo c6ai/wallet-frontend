@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { BsPlusCircle } from 'react-icons/bs';
 import { BiLeftArrow, BiRightArrow } from 'react-icons/bi';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
-import {BsQrCodeScan} from 'react-icons/bs'
+import { BsQrCodeScan } from 'react-icons/bs'
 
 import Slider from 'react-slick';
-import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import jsonpointer from 'jsonpointer';
 import addImage from '../../assets/images/cred.png';
@@ -44,45 +44,45 @@ const SvgRender = (credential) => {
 		fetchSvgContent();
 	}, [svgUrl]);
 
-  if (svgContent === null) {
-    return <div>Loading...</div>;
-  }
+	if (svgContent === null) {
+		return null;
+	}
 
-  const regex = /{{([^}]+)}}/g;
+	const regex = /{{([^}]+)}}/g;
 
-  const replaceText = (match, content) => {
-		console.log(match,content);
-		const res = jsonpointer.get(credential.credential.vcData,content)
-		console.log('res= ',res);
+	const replaceText = (match, content) => {
+		console.log(match, content);
+		const res = jsonpointer.get(credential.credential.vcData, content)
+		console.log('res= ', res);
 
 		if (res) {
-				return res;
+			return res;
 		} else {
-				return null;
+			return null;
 		}
 	};
 
-  const replacedSvgText = svgContent.replace(regex, replaceText);
+	const replacedSvgText = svgContent.replace(regex, replaceText);
 
 	const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(replacedSvgText)}`;
 
-  return (
-    <img src={dataUri} alt="Rendered SVG" className="w-auto h-auto rounded-xl object-fit-cover transition-shadow shadow-md hover:shadow-lg cursor-pointer" />
-  );
+	return (
+		<img src={dataUri} alt="Rendered SVG" className="w-auto max-h-auto rounded-xl object-fit-cover transition-shadow shadow-md hover:shadow-lg cursor-pointer" />
+	);
 }
 
 const Home = () => {
-  const api = useApi();
-  const [credentials, setCredentials] = useState([]);
-  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
-  const [currentSlide, setCurrentSlide] = useState(1);
+	const api = useApi();
+	const [credentials, setCredentials] = useState([]);
+	const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
+	const [currentSlide, setCurrentSlide] = useState(1);
 	const [isImageModalOpen, setImageModalOpen] = useState(false);
 	const [selectedCredential, setSelectedCredential] = useState(null);
-  const [showDeletePopup, setShowDeletePopup] = useState(false);
-  const [loading, setLoading] = useState(false);
+	const [showDeletePopup, setShowDeletePopup] = useState(false);
+	const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();
-  const sliderRef = useRef();
+	const navigate = useNavigate();
+	const sliderRef = useRef();
 	const { t } = useTranslation();
 
 	const settings = {
@@ -97,18 +97,18 @@ const Home = () => {
 		centerPadding: '10px', // Set the padding between adjacent images to 2 pixels
 		style: { margin: '0 10px' },
 	};
-	
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 768);
-    };
 
-    window.addEventListener('resize', handleResize);
+	useEffect(() => {
+		const handleResize = () => {
+			setIsSmallScreen(window.innerWidth < 768);
+		};
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+		window.addEventListener('resize', handleResize);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
 
 	useEffect(() => {
 		const getData = async () => {
@@ -118,13 +118,13 @@ const Home = () => {
 		getData();
 	}, [api]);
 
-  const handleAddCredential = () => {
-    navigate('/add');
-  };
+	const handleAddCredential = () => {
+		navigate('/add');
+	};
 
-  const handleImageClick = (credential) => {
-			navigate(`/credential/${credential.id}`);
-  };
+	const handleImageClick = (credential) => {
+		navigate(`/credential/${credential.id}`);
+	};
 
 	// QR Code part
 	const [isQRScannerOpen, setQRScannerOpen] = useState(false);
@@ -149,41 +149,41 @@ const Home = () => {
 		window.location.href = '/';
 	};
 
-  return (
-    <>
-      <div className="sm:px-6 w-full">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-custom-blue">{t('common.navItemCredentials')}</h1>
+	return (
+		<>
+			<div className="sm:px-6 w-full">
+				<div className="flex justify-between items-center">
+					<h1 className="text-2xl font-bold text-custom-blue">{t('common.navItemCredentials')}</h1>
 
 					<div className='flex gap-x-1'>
-					{ isSmallScreen && (
+						{isSmallScreen && (
+							<button
+								className="px-2 py-2 mb-2 text-white bg-custom-blue hover:bg-custom-blue-hover focus:ring-4 focus:outline-none focus:ring-custom-blue font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover dark:focus:ring-custom-blue-hover"
+								onClick={openQRScanner} // Open the QR code scanner modal
+							>
+								<div className="flex items-center">
+									<BsQrCodeScan size={20} className="text-white" />
+								</div>
+							</button>
+						)}
 						<button
-						className="px-2 py-2 mb-2 text-white bg-custom-blue hover:bg-custom-blue-hover focus:ring-4 focus:outline-none focus:ring-custom-blue font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover dark:focus:ring-custom-blue-hover"
-						onClick={openQRScanner} // Open the QR code scanner modal
-					>
-						<div className="flex items-center">
-							<BsQrCodeScan size={20} className="text-white" />
-						</div>
-					</button>
-					)}
-          <button
-            className="px-2 py-2 mb-2 text-white bg-custom-blue hover:bg-custom-blue-hover focus:ring-4 focus:outline-none focus:ring-custom-blue font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover dark:focus:ring-custom-blue-hover"
-            onClick={handleAddCredential}
-          >
-            <div className="flex items-center">
-              <BsPlusCircle size={20} className="text-white" />
-              <span className="hidden sm:inline">&nbsp; {t('common.navItemCredentials')}</span>
-            </div>
-          </button>
+							className="px-2 py-2 mb-2 text-white bg-custom-blue hover:bg-custom-blue-hover focus:ring-4 focus:outline-none focus:ring-custom-blue font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover dark:focus:ring-custom-blue-hover"
+							onClick={handleAddCredential}
+						>
+							<div className="flex items-center">
+								<BsPlusCircle size={20} className="text-white" />
+								<span className="hidden sm:inline">&nbsp; {t('common.navItemCredentials')}</span>
+							</div>
+						</button>
 					</div>
 
-          
-        </div>
-        <hr className="mb-2 border-t border-custom-blue/80" />
-        <p className="italic pd-2 text-gray-700">{t('pageCredentials.description')}</p>
-        <div className='my-4'>
-          {isSmallScreen ? (
-          	<>
+
+				</div>
+				<hr className="mb-2 border-t border-custom-blue/80" />
+				<p className="italic pd-2 text-gray-700">{t('pageCredentials.description')}</p>
+				<div className='my-4'>
+					{isSmallScreen ? (
+						<>
 
 							{credentials.length === 0 ? (
 								<div
@@ -205,8 +205,16 @@ const Home = () => {
 									<Slider ref={sliderRef} {...settings}>
 										{credentials.map((credential) => (
 											<>
-												<div className="relative rounded-xl xl:w-4/5 md:w-full  sm:w-full overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer w-full" onClick={() => {setImageModalOpen(true);setSelectedCredential(credential);}}>
-													<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+												<div className="relative" onClick={() => { setImageModalOpen(true); setSelectedCredential(credential); }}>
+													{credential.vcData.renderMethod ? (
+														<SvgRender credential={credential} />
+													) : (
+														<img
+															src={credential.src}
+															alt={credential.alt}
+															className="w-auto max-h-auto object-cover rounded-xl transition-shadow shadow-md hover:shadow-lg cursor-pointer"
+														/>
+													)}
 												</div>
 												<div className="flex items-center justify-end mt-2 mr-3">
 													<span className="mr-4">{currentSlide} of {credentials.length}</span>
@@ -218,7 +226,7 @@ const Home = () => {
 													</button>
 												</div>
 												<CredentialInfo credential={credential} />
-            						<CredentialDeleteButton onDelete={() => { setShowDeletePopup(true); setSelectedCredential(credential); }} />
+												<CredentialDeleteButton onDelete={() => { setShowDeletePopup(true); setSelectedCredential(credential); }} />
 												<CredentialJson credential={credential} />
 
 											</>
@@ -226,52 +234,61 @@ const Home = () => {
 									</Slider>
 								</>
 							)}
-				 		</>
-          	) : (
-							<div className="flex gap-20">
-								{credentials.map((credential) => (
-									<div
-										key={credential.id}
-										className=" flex justify-center"
-										onClick={() => handleImageClick(credential)}
-									>
-										{credential.vcData.renderMethod ?(
-											<SvgRender credential={credential}/>
-										):(
-
-											<img src={credential.src} alt={credential.alt} className=" object-contain rounded-xl transition-shadow shadow-md hover:shadow-lg cursor-pointer" />
-										)}
-									</div>
-								))}
+						</>
+					) : (
+						<div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-20">
+							{credentials.map((credential) => (
 								<div
-									className="relative "
-									onClick={handleAddCredential}
+									key={credential.id}
+									className="flex justify-center mb-4" // Add margin-bottom to create new rows
+									onClick={() => handleImageClick(credential)}
 								>
-									<img
-										src={addImage}
-										alt="add new credential"
-										className="w-auto h-full rounded-xl opacity-100 hover:opacity-120 rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg"
-									/>
-									<div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-										<BsPlusCircle size={60} className="text-white mb-2 mt-4" />
-										<span className="text-white font-semibold">{t('pageCredentials.addCardTitle')}</span>
-									</div>
+									{credential.vcData.renderMethod ? (
+										<SvgRender credential={credential} />
+									) : (
+										<img
+											src={credential.src}
+											alt={credential.alt}
+											className="w-auto max-h-60 object-contain rounded-xl transition-shadow shadow-md hover:shadow-lg cursor-pointer"
+										/>
+									)}
+								</div>
+							))}
+							<div className="relative mb-4" onClick={handleAddCredential}>
+								<img
+									src={addImage}
+									alt="add new credential"
+									className="w-auto max-h-60 rounded-xl opacity-100 hover:opacity-120 rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg"
+								/>
+								<div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+									<BsPlusCircle size={60} className="text-white mb-2 mt-4" />
+									<span className="text-white font-semibold">{t('pageCredentials.addCardTitle')}</span>
 								</div>
 							</div>
-          	)}
-        </div>
-      </div>
+						</div>
+
+					)}
+				</div>
+			</div>
 			{/* Modal for Fullscreen credential */}
 			{isImageModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
 					<div className="relative">
-						<img src={selectedCredential.src} alt={selectedCredential.src} className="max-w-full max-h-full rounded-xl" />
+						{selectedCredential.vcData.renderMethod ? (
+							<SvgRender credential={selectedCredential} />
+						) : (
+							<img
+								src={selectedCredential.src}
+								alt={selectedCredential.alt}
+								className="max-w-full max-h-full rounded-xl"
+							/>
+						)}
 					</div>
 					<button
-							className="absolute top-20 md:top-4 sm:top-4 right-4 text-white text-2xl z-10"
-							onClick={() => setImageModalOpen(false)}
+						className="absolute top-20 md:top-4 sm:top-4 right-4 text-white text-2xl z-10"
+						onClick={() => setImageModalOpen(false)}
 					>
-							<AiOutlineCloseCircle size={40} />
+						<AiOutlineCloseCircle size={40} />
 					</button>
 				</div>
 			)}
@@ -279,23 +296,23 @@ const Home = () => {
 			{/* QR Code Scanner Modal */}
 			{isQRScannerOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-        	<QRCodeScanner
-          	onClose={closeQRScanner}
+					<QRCodeScanner
+						onClose={closeQRScanner}
 					/>
 				</div>
 			)}
 
 			{/* Delete Credential Modal */}
 			{showDeletePopup && selectedCredential && (
-        <CredentialDeletePopup
-          credential={selectedCredential}
-          onCancel={() => setShowDeletePopup(false)}
-          onConfirm={handleSureDelete}
-          loading={loading}
-        />
-      )}
-    </>
-  );
+				<CredentialDeletePopup
+					credential={selectedCredential}
+					onCancel={() => setShowDeletePopup(false)}
+					onConfirm={handleSureDelete}
+					loading={loading}
+				/>
+			)}
+		</>
+	);
 };
 
 export default Home;
