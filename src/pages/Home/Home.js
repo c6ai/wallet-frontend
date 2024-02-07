@@ -20,6 +20,7 @@ import CredentialDeleteButton from '../../components/Credentials/CredentialDelet
 import CredentialDeletePopup from '../../components/Credentials/CredentialDeletePopup';
 import { fetchCredentialData } from '../../components/Credentials/ApiFetchCredential';
 import QRCodeScanner from '../../components/QRCodeScanner/QRCodeScanner'; // Replace with the actual import path
+import RenderSvgTemplate from '../../components/RenderSvgTemplate/RenderSvgTemplate';
 
 const Home = () => {
   const api = useApi();
@@ -157,7 +158,12 @@ const Home = () => {
 										{credentials.map((credential) => (
 											<>
 												<div className="relative rounded-xl xl:w-4/5 md:w-full  sm:w-full overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer w-full" onClick={() => {setImageModalOpen(true);setSelectedCredential(credential);}}>
-													<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+													
+													{credential.vcData.renderMethod ? (
+														<RenderSvgTemplate credential={credential} classNames="w-full h-full object-cover rounded-xl"/>
+													) : (
+														<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+													)}
 												</div>
 												<div className="flex items-center justify-end mt-2 mr-3">
 													<span className="mr-4">{currentSlide} of {credentials.length}</span>
@@ -186,7 +192,11 @@ const Home = () => {
 										className="relative rounded-xl overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer"
 										onClick={() => handleImageClick(credential)}
 									>
-										<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+										{credential.vcData.renderMethod ? (
+											<RenderSvgTemplate credential={credential} classNames="w-full h-full object-cover rounded-xl"/>
+										) : (
+											<img src={credential.src} alt={credential.alt} className="w-full h-full object-cover rounded-xl" />
+										)}
 									</div>
 								))}
 								<div
@@ -211,7 +221,11 @@ const Home = () => {
 			{isImageModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
 					<div className="relative">
-						<img src={selectedCredential.src} alt={selectedCredential.src} className="max-w-full max-h-full rounded-xl" />
+						{selectedCredential.vcData.renderMethod ? (
+							<RenderSvgTemplate credential={selectedCredential} classNames="max-w-full max-h-full rounded-xl"/>
+						) : (
+							<img src={selectedCredential.src} alt={selectedCredential.src} className="max-w-full max-h-full rounded-xl" />
+						)}
 					</div>
 					<button
 							className="absolute top-20 md:top-4 sm:top-4 right-4 text-white text-2xl z-10"

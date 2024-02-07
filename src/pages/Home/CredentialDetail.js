@@ -14,6 +14,7 @@ import CredentialJson from '../../components/Credentials/CredentialJson';
 import { fetchCredentialData } from '../../components/Credentials/ApiFetchCredential';
 import CredentialDeleteButton from '../../components/Credentials/CredentialDeleteButton';
 import CredentialDeletePopup from '../../components/Credentials/CredentialDeletePopup';
+import RenderSvgTemplate from '../../components/RenderSvgTemplate/RenderSvgTemplate';
 
 const CredentialDetail = () => {
 	const api = useApi();
@@ -68,9 +69,13 @@ const CredentialDetail = () => {
 					<div className='lg:w-1/2'>
 						{credential && credential.src ? (
 						// Open the modal when the credential is clicked
-						<div className="relative rounded-xl xl:w-4/5 pt-5 md:w-full sm:w-full overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer w-full" onClick={() => setImageModalOpen(true)}>
-							<img src={credential.src} alt={credential.alt} className="w-full object-cover rounded-xl" />
-
+						<div className="relative rounded-xl xl:w-4/5 mt-5 md:w-full sm:w-full overflow-hidden transition-shadow shadow-md hover:shadow-lg cursor-pointer w-full" onClick={() => setImageModalOpen(true)}>
+							
+							{credential.vcData.renderMethod ? (
+								<RenderSvgTemplate credential={credential} classNames="w-full object-cover rounded-xl" />
+							) : (
+								<img src={credential.src} alt={credential.alt} className="w-full object-cover rounded-xl" />
+							)}
 						</div>
 						) : (
 							<></>
@@ -94,7 +99,11 @@ const CredentialDetail = () => {
 			{isImageModalOpen && (
 				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
 					<div className="relative">
-						<img src={credential.src} alt={credential.src} className="max-w-full max-h-full rounded-xl" />
+					{credential.vcData.renderMethod ? (
+							<RenderSvgTemplate credential={credential} classNames="max-w-full max-h-full rounded-xl" />
+						) : (
+							<img src={credential.src} alt={credential.src} className="max-w-full max-h-full rounded-xl" />
+						)}
 					</div>
 					<button
 							className="absolute top-20 md:top-4 sm:top-4 right-4 text-white text-2xl z-10"

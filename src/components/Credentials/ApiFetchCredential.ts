@@ -16,6 +16,7 @@ export async function fetchCredentialData(api: BackendApi, id = null) {
             src: item.logoURL,
             alt: item.issuerFriendlyName,
             data: parseJwt(item.credential)["vc"]['credentialSubject'],
+						vcData: parseJwt(item.credential)["vc"],
             type: parseJwt(item.credential)['vc']["type"]["2"],
             expdate: parseJwt(item.credential)['vc']["expirationDate"],
 						json:JSON.stringify(parseJwt(item.credential)["vc"], null, 2)
@@ -31,6 +32,7 @@ export async function fetchCredentialData(api: BackendApi, id = null) {
         src: item.logoURL,
         alt: item.issuerFriendlyName,
         data: parseJwt(item.credential)["vc"]['credentialSubject'],
+				vcData: parseJwt(item.credential)["vc"],
         type: parseJwt(item.credential)['vc']["type"]["2"],
         expdate: parseJwt(item.credential)['vc']["expirationDate"],
 				json:JSON.stringify(parseJwt(item.credential)["vc"], null, 2)
