@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaShare } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 import { useApi } from '../../api';
-
 
 function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conformantCredentialsMap }) {
 	const api = useApi();
@@ -12,13 +11,13 @@ function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conforman
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 
-	const keys = Object.keys(conformantCredentialsMap);
+	const keys = useMemo(() => Object.keys(conformantCredentialsMap), [conformantCredentialsMap]);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [currentSelectionMap, setCurrentSelectionMap] = useState({});
 
 	useEffect(() => {
 		const getData = async () => {
-			if (currentIndex == Object.keys(conformantCredentialsMap).length) {
+			if (currentIndex === keys.length) {
 				setSelectionMap(currentSelectionMap);
 				setShowPopup(false); // finished
 				return;
@@ -27,11 +26,11 @@ function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conforman
 			try {
 				const response = await api.get('/storage/vc');
 				const simplifiedCredentials = response.data.vc_list
-							.filter(vc => conformantCredentialsMap[keys[currentIndex]].includes(vc.credentialIdentifier))
-							.map(vc => ({
-								id: vc.credentialIdentifier,
-								imageURL: vc.logoURL,
-							}));
+					.filter(vc => conformantCredentialsMap[keys[currentIndex]].includes(vc.credentialIdentifier))
+					.map(vc => ({
+						id: vc.credentialIdentifier,
+						imageURL: vc.logoURL,
+					}));
 
 				setImages(simplifiedCredentials);
 			} catch (error) {
@@ -40,18 +39,18 @@ function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conforman
 		};
 
 		getData();
-	}, [api, currentIndex]);
+	}, [api, currentIndex, conformantCredentialsMap, currentSelectionMap, keys, setSelectionMap, setShowPopup]);
 
 	const goToNextSelection = () => {
-		setCurrentIndex((i) => i+1);
+		setCurrentIndex(i => i + 1);
 	}
 
 	const handleClick = (id) => {
 		const descriptorId = keys[currentIndex];
-		setCurrentSelectionMap((currentMap) => {
-			currentMap[descriptorId] = id;
-			return currentMap;
-		});
+		setCurrentSelectionMap(prevMap => ({
+			...prevMap,
+			[descriptorId]: id
+		}));
 		goToNextSelection();
 	};
 
@@ -62,14 +61,14 @@ function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conforman
 
 	if (!showPopup) {
 		return null;
-	};
+	}
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center z-50">
 			<div className="absolute inset-0 bg-black opacity-50"></div>
 			<div className="bg-white p-4 rounded-lg shadow-lg w-full max-h-[80vh] lg:w-[33.33%] sm:w-[66.67%] z-10 relative m-4 ">
 				<h2 className="text-lg font-bold mb-2 text-custom-blue">
-					<FaShare size={20} className="inline mr-1 mb-1" /> 
+					<FaShare size={20} className="inline mr-1 mb-1" />
 					{t('selectCredentialPopup.title')}
 				</h2>
 				<hr className="mb-2 border-t border-custom-blue/80" />
@@ -78,9 +77,8 @@ function SelectCredentials({ showPopup, setShowPopup, setSelectionMap, conforman
 				</p>
 				<div className='mt-2 flex flex-wrap justify-center flex overflow-y-auto max-h-[50vh]'>
 					{images.map(image => (
-						<div className="m-5">
+						<div className="m-5" key={image.id}>
 							<img
-								key={image.id}
 								src={image.imageURL}
 								alt={image.id}
 								onClick={() => handleClick(image.id)}
