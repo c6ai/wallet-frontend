@@ -110,14 +110,12 @@ const Layout = ({ children, isPermissionGranted, isPermissionValue, setispermiss
 												allow permission for notifications
 											</span>{' '}
 											from your browser.
-											<a className="ml-2" onClick={requestNotificationPermission}>
-												<button
-													className="px-2 py-1 text-white bg-custom-blue hover:bg-custom-blue-hover font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover"
-													onClick={requestNotificationPermission}
-												>
-													Allow
-												</button>
-											</a>
+											<button
+												className="ml-2 text-white bg-custom-blue hover:bg-custom-blue-hover font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-custom-blue-hover dark:hover:bg-custom-blue-hover"
+												onClick={requestNotificationPermission}
+											>
+												Allow
+											</button>
 										</p>
 									</>
 								)}

@@ -10,7 +10,7 @@ const PrivateRoute = ({ children }) => {
   const api = useApi();
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
 	const [isPermissionValue, setispermissionValue] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const keystore = useLocalStorageKeystore();
   const isLoggedIn = api.isLoggedIn() && keystore.isOpen();
   
