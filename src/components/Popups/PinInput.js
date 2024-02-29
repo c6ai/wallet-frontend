@@ -98,7 +98,7 @@ function PinInput({ showPopup, setShowPopup }) {
 
 	useEffect(() => {
 		inputRefs[0].current.focus();
-	}, []);
+	},);
 
 	if (!showPopup) {
 		return null;
