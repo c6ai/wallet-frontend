@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { onMessageListener } from '../firebase';
 import { AiOutlineClose } from 'react-icons/ai';
@@ -32,6 +32,7 @@ const ToastDisplay = ({ id, notification }) => {
 const HandlerNotification = ({ children }) => {
   const [notification, setNotification] = useState({ title: '', body: '' });
   const [isMessageReceived, setMessageReceived] = useState(null);
+  const showToastRef = useRef(null);
 
   const showToast = () =>
     toast((t) => <ToastDisplay id={t.id} notification={notification} />, {
@@ -40,15 +41,19 @@ const HandlerNotification = ({ children }) => {
       },
     });
 
-  useEffect(() => {
-    if (notification?.title) {
-      showToast();
-    }
-  }, [notification]);
+		useEffect(() => {
+			showToastRef.current = showToast;
+		});
+
+		useEffect(() => {
+			if (notification?.title && showToastRef.current) {
+				showToastRef.current();
+			}
+		}, [notification]);
 
   useEffect(() => {
     let messageReceived = false;
-		const unregisterMessageListener = onMessageListener()
+		onMessageListener()
 		.then((payload) => {
 			// Process the received message
 			setNotification({
