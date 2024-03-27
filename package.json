@@ -81,7 +81,8 @@
   "license": "MIT",
   "jest": {
     "moduleNameMapper": {
-      "multiformats": "multiformats/src"
+      "multiformats": "multiformats/src",
+      "uint8arrays": "uint8arrays/dist/src"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!axios)/"
