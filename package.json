@@ -80,6 +80,9 @@
   "author": "gregory1996 <grigoriskatrakazas@gmail.com>",
   "license": "MIT",
   "jest": {
+    "moduleNameMapper": {
+      "multiformats": "multiformats/src"
+    },
     "transformIgnorePatterns": [
       "node_modules/(?!axios)/"
     ]
