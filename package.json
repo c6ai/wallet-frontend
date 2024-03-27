@@ -78,5 +78,10 @@
   "main": "index.js",
   "repository": "https://github.com/gunet/wallet-frontend",
   "author": "gregory1996 <grigoriskatrakazas@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)/"
+    ]
+  }
 }
