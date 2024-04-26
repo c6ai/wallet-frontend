@@ -3,6 +3,7 @@
 		"cancel": "Cancel",
 		"continue": "Continue",
 		"delete": "Delete",
+		"navItemAbout": "About",
 		"navItemAddCredentials": "Add Credentials",
 		"navItemAddCredentialsSimple": "Add",
 		"navItemCredentials": "Credentials",
@@ -108,6 +109,30 @@
 		"homeButton": "Back to Home",
 		"message": "Sorry, the page you're looking for cannot be accessed",
 		"title": "Oops, page not found!"
+	},
+	"pageAbout": {
+		"description": "Explore wallet's features, updates, and community engagement",
+		"version": {
+			"title": "Current Version",
+			"intro": "The current versions are:",
+			"backendVersion": "Backend Version",
+			"frontendVersion": "Frontend Version"
+		},
+		"featureInterface": "User-Friendly Interface: Simplified navigation and personalized wallet management.",
+		"featureNotifications": "Real-Time Notifications: Immediate updates on transactions and market changes.",
+		"featureSecurity": "Enhanced Security: Multi-factor authentication and end-to-end encryption.",
+		"introduction": "wwWallet (World Wide Wallet) is an open source project on github which developing by GUnet, Sunet and Yubiko.WwWallet is a secure web wallet for storing and managing verifiable credentials.",
+		"getInvolved": "Get Involved",
+		"githubLink": "Join our developer community on GitHub and contribute to the future of wwWallet!",
+		"howToUse": "How to Use",
+		"license": "wwWallet is open-source software distributed under the MIT License.",
+		"licenseInformation": "License Information",
+		"releaseNotes": "Release Notes",
+		"releaseNotesLink": "For detailed updates and improvements, see our Release Notes.",
+		"supportAndFeedback": "Support and Feedback",
+		"supportEmail": "For support inquiries or feedback, please contact us at support@wwwallet.com.",
+		"title": "About wwWallet",
+		"usageTips": "For tips on how to use the wallet, check our user guide or tutorial videos."
 	},
 	"pageAddCredentials": {
 		"description": "Search and choose an issuer for credential retrieval",

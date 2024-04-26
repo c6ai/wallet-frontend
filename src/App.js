@@ -16,6 +16,7 @@ import History from './pages/History/History';
 import Settings from './pages/Settings/Settings';
 import AddCredentials from './pages/AddCredentials/AddCredentials';
 import SendCredentials from './pages/SendCredentials/SendCredentials';
+import About from './pages/About/About';
 
 const Login = React.lazy(() => import('./pages/Login/Login'));
 const NotFound = React.lazy(() => import('./pages/NotFound/NotFound'));
@@ -90,6 +91,7 @@ function App() {
 							<Route path="/login" element={<Login />} />
 							<Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 							<Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+							<Route path="/about" element={<PrivateRoute><About /></PrivateRoute>} />
 							<Route path="/credential/:id" element={<PrivateRoute><CredentialDetail /></PrivateRoute>} />
 							<Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
 							<Route path="/add" element={<PrivateRoute><AddCredentials /></PrivateRoute>} />

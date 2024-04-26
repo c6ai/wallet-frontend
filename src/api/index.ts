@@ -49,6 +49,8 @@ export interface BackendApi {
 	login(username: string, password: string, keystore: LocalStorageKeystore): Promise<Result<void, any>>,
 	signup(username: string, password: string, keystore: LocalStorageKeystore): Promise<Result<void, any>>,
 	getAllVerifiers(): Promise<Verifier[]>,
+	getVersion(): Promise<string>
+
 	getAllPresentations(): Promise<AxiosResponse>,
 	initiatePresentationExchange(verifier_id: number, scope_name: string): Promise<{ redirect_to?: string }>,
 
@@ -208,6 +210,19 @@ export function useApi(): BackendApi {
 				}
 				catch (error) {
 					console.error("Failed to fetch all verifiers", error);
+					throw error;
+				}
+			}
+
+			async function getVersion(): Promise<string> {
+				try {
+					const result = await get('/version/version');
+					const { version } = result.data;
+					console.log("version = ", version)
+					return version;
+				}
+				catch (error) {
+					console.error("Failed to fetch version", error);
 					throw error;
 				}
 			}
@@ -443,6 +458,7 @@ export function useApi(): BackendApi {
 				getSession,
 				isLoggedIn,
 				clearSession,
+				getVersion,
 
 				login,
 				signup,
