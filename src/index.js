@@ -11,4 +11,17 @@ ConsoleBehavior();
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 
-serviceWorkerRegistration.register();
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/firebase-messaging-sw.js')
+			.then(registration => {
+				console.log('App: Firebase Messaging Service Worker registered! Scope is:', registration.scope);
+			})
+			.catch(err => {
+				console.log('App: Firebase Messaging Service Worker registration failed:', err);
+			});
+
+	});
+}
+
+serviceWorkerRegistration.register()
