@@ -13,13 +13,14 @@ export default function handleServerMessagesGuard(Component) {
 		const appToken = api.getAppToken();
 
 		const [handshakeEstablished, setHandshakeEstablished] = useState(false);
+		const [isOnline, setIsOnline] = useState(navigator.onLine);
 		const socketRef = useRef(null);
 		const keystore = useLocalStorageKeystore();
 		const signingRequestHandlerService = SigningRequestHandlerService();
 
 		useEffect(
 			() => {
-				if (appToken) {
+				if (isOnline && appToken) {
 					if (!socketRef.current) {
 						const socket = new WebSocket(REACT_APP_WS_URL);
 						socketRef.current = socket;
@@ -80,7 +81,16 @@ export default function handleServerMessagesGuard(Component) {
 			[appToken],
 		);
 
-		if (handshakeEstablished === true || !appToken) {
+		// Check for online status changes and update the state accordingly
+		window.addEventListener('online', () => {
+			setIsOnline(true);
+		});
+
+		window.addEventListener('offline', () => {
+			setIsOnline(false);
+		});
+
+		if (!isOnline || handshakeEstablished === true || !appToken) {
 			return (<Component {...props} />);
 		}
 		else {
