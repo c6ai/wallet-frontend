@@ -1,12 +1,5 @@
 /* eslint-disable no-restricted-globals */
 
-// This service worker can be customized!
-// See https://developers.google.com/web/tools/workbox/modules
-// for the list of available Workbox modules, or add any other
-// code you'd like.
-// You can also remove this file if you'd prefer not to use a
-// service worker, and the Workbox build step will be skipped.
-
 import { clientsClaim } from "workbox-core";
 import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
@@ -14,14 +7,14 @@ import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 import { openDB } from 'idb';
 
-const DB_NAME = "ediplomas-digital-wallet";
+const DB_NAME = "wwwallet-db";
 const DB_VERSION = 1;
 const DB_STORAGE_VC_NAME = "storage";
 
 const dbPromise = openDB(DB_NAME, DB_VERSION, {
-  upgrade(db) {
-    db.createObjectStore(DB_STORAGE_VC_NAME);
-  },
+	upgrade(db) {
+		db.createObjectStore(DB_STORAGE_VC_NAME);
+	},
 });
 
 clientsClaim();
@@ -30,66 +23,71 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute([
+	...self.__WB_MANIFEST,
+	{ url: '/manifest.json', revision: '1' },
+	{ url: '/favicon.ico', revision: '1' },
+]);
+
 
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
 const fileExtensionRegexp = new RegExp("/[^/?]+\\.[^/]+$");
 registerRoute(
-  // Return false to exempt requests from being fulfilled by index.html.
-  ({ request, url }) => {
-    // If this isn't a navigation, skip.
-    if (request.mode !== "navigate") {
-      return false;
-    } // If this is a URL that starts with /_, skip.
-
-    if (url.pathname.startsWith("/_")) {
-      return false;
-    } // If this looks like a URL for a resource, because it contains // a file extension, skip.
-
-    if (url.pathname.match(fileExtensionRegexp)) {
-      return false;
-    } // Return true to signal that we want to use the handler.
-
-    return true;
-  },
-  createHandlerBoundToURL(process.env.PUBLIC_URL + "/index.html")
+	// Return false to exempt requests from being fulfilled by index.html.
+	({ request, url }) => {
+		// If this isn't a navigation, skip.
+		if (request.mode !== "navigate") {
+			return false;
+		}
+		// If this is a URL that starts with /_, skip.
+		if (url.pathname.startsWith("/_")) {
+			return false;
+		}
+		// If this looks like a URL for a resource, because it contains // a file extension, skip.
+		if (url.pathname.match(fileExtensionRegexp)) {
+			return false;
+		}
+		// Return true to signal that we want to use the handler.
+		return true;
+	},
+	createHandlerBoundToURL(process.env.PUBLIC_URL + "/index.html")
 );
 
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
 // and cross-origin .png requests for credential logo images
 registerRoute(
-  // Add in any other file extensions or routing criteria as needed.
-  ({ url }) =>
-    url.pathname.endsWith(".png"), // Customize this strategy as needed, e.g., by changing to CacheFirst.
-  new StaleWhileRevalidate({
-    cacheName: "images",
-    plugins: [
-      // Ensure that once this runtime cache reaches a maximum size the
-      // least-recently used images are removed.
-      new ExpirationPlugin({ maxEntries: 50 }),
-    ],
-  })
+	// Add in any other file extensions or routing criteria as needed.
+	({ url }) =>
+		url.pathname.endsWith(".png"), // Customize this strategy as needed, e.g., by changing to CacheFirst.
+	new StaleWhileRevalidate({
+		cacheName: "images",
+		plugins: [
+			// Ensure that once this runtime cache reaches a maximum size the
+			// least-recently used images are removed.
+			new ExpirationPlugin({ maxEntries: 50 }),
+		],
+	})
 );
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
+	if (event.data && event.data.type === "SKIP_WAITING") {
+		self.skipWaiting();
+	}
 });
 
 // Any other custom service worker logic can go here.
 
- async function fetchAndSaveResponse(request) {
+async function fetchAndSaveResponse(request) {
 	try {
-  	// Fetch the URL
- 	 const response = await fetch(request);
+		// Fetch the URL
+		const response = await fetch(request);
 
-  	// Check if the response is OK
+		// Check if the response is OK
 		if (response.ok) {
 			// Save the response body to IndexedDB
 			saveResponseToIndexedDB(response.clone());
@@ -97,8 +95,7 @@ self.addEventListener("message", (event) => {
 			// Return the response
 			return response;
 		}
-  } catch (error) {
-
+	} catch (error) {
 		// Get the response from IndexedDB
 		const responseFromIndexedDB = await getResponseFromIndexedDB(request.url);
 
@@ -109,7 +106,7 @@ self.addEventListener("message", (event) => {
 			// Return the response from IndexedDB
 			return new Response(responseFromIndexedDB);
 		}
-  }
+	}
 }
 
 async function saveResponseToIndexedDB(response) {
@@ -121,42 +118,52 @@ async function getResponseFromIndexedDB(url) {
 }
 
 const matchVCStorageCb = ({ url, request, event }) => {
-  return url.pathname === "/storage/vc";
+	return url.pathname === "/storage/vc";
 };
 
 const handlerVCStorageCb = async ({ url, request, event, params }) => {
-  console.log("eDiplomas digital wallet get verified credentials");
+	console.log("wwWallet get verified credentials");
+	return await fetchAndSaveResponse(request);
+};
+
+const matchVCStorageVp = ({ url, request, event }) => {
+	return url.pathname === "/storage/vp";
+};
+
+const handlerVCStorageVp = async ({ url, request, event, params }) => {
+	console.log("wwWallet get verified credentials");
 	return await fetchAndSaveResponse(request);
 };
 
 const matchIssuersCb = ({ url, request, event }) => {
-  return url.pathname === "/legal_person/issuers/all";
+	return url.pathname === "/legal_person/issuers/all";
 };
 
 const handlerIssuersCb = async ({ url, request, event, params }) => {
-  console.log("eDiplomas digital wallet get verified credentials");
+	console.log("wwWallet get verified credentials");
 	return await fetchAndSaveResponse(request);
 };
 
 const matchVerifiersCb = ({ url, request, event }) => {
-  return url.pathname === "/verifiers/all";
+	return url.pathname === "/verifiers/all";
 };
 
 const handlerVerifiersCb = async ({ url, request, event, params }) => {
-  console.log("eDiplomas digital wallet get verified credentials");
+	console.log("wwWallet get verified credentials");
 	return await fetchAndSaveResponse(request);
 };
 
 const matchAccountInfoCb = ({ url, request, event }) => {
-  return url.pathname === "/user/session/account-info";
+	return url.pathname === "/user/session/account-info";
 };
 
 const handlerAccountInfoCb = async ({ url, request, event, params }) => {
-  console.log("eDiplomas digital wallet get verified credentials");
+	console.log("wwWallet get verified credentials");
 	return await fetchAndSaveResponse(request);
 };
 
 registerRoute(matchVCStorageCb, handlerVCStorageCb);
+registerRoute(matchVCStorageVp, handlerVCStorageVp);
 registerRoute(matchIssuersCb, handlerIssuersCb);
 registerRoute(matchVerifiersCb, handlerVerifiersCb);
 registerRoute(matchAccountInfoCb, handlerAccountInfoCb);
