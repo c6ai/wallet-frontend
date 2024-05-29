@@ -80,32 +80,35 @@ self.addEventListener("message", (event) => {
 	}
 });
 
-// Any other custom service worker logic can go here.
+// In-memory store for sensitive data
+const inMemoryStore = {};
 
 async function fetchAndSaveResponse(request) {
 	try {
-		// Fetch the URL
 		const response = await fetch(request);
-
-		// Check if the response is OK
 		if (response.ok) {
-			// Save the response body to IndexedDB
-			saveResponseToIndexedDB(response.clone());
-
-			// Return the response
+			const url = request.url;
+			if (isSensitiveResponse(url)) {
+				inMemoryStore[url] = await response.clone().text();
+			} else {
+				saveResponseToIndexedDB(response.clone());
+			}
 			return response;
 		}
 	} catch (error) {
-		// Get the response from IndexedDB
-		const responseFromIndexedDB = await getResponseFromIndexedDB(request.url);
-
-		// If the response is not found, reject the promise with the error
-		if (!responseFromIndexedDB) {
-			throw error;
+		const url = request.url;
+		if (isSensitiveResponse(url)) {
+			const storedResponse = inMemoryStore[url];
+			if (storedResponse) {
+				return new Response(storedResponse);
+			}
 		} else {
-			// Return the response from IndexedDB
-			return new Response(responseFromIndexedDB);
+			const responseFromIndexedDB = await getResponseFromIndexedDB(url);
+			if (responseFromIndexedDB) {
+				return new Response(responseFromIndexedDB);
+			}
 		}
+		throw error;
 	}
 }
 
@@ -117,50 +120,29 @@ async function getResponseFromIndexedDB(url) {
 	return (await dbPromise).get(DB_STORAGE_VC_NAME, url);
 }
 
-const matchVCStorageCb = ({ url, request, event }) => {
-	return url.pathname === "/storage/vc";
-};
+function isSensitiveResponse(url) {
+	const sensitiveEndpoints = [
+		'/storage/vc',
+		'/storage/vp',
+		'/user/session/account-info',
+	];
+	return sensitiveEndpoints.some(endpoint => url.includes(endpoint));
+}
 
-const handlerVCStorageCb = async ({ url, request, event, params }) => {
-	console.log("wwWallet get verified credentials");
-	return await fetchAndSaveResponse(request);
-};
+const matchVCStorageCb = ({ url }) => url.pathname === "/storage/vc";
+const handlerVCStorageCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchVCStorageVp = ({ url, request, event }) => {
-	return url.pathname === "/storage/vp";
-};
+const matchVCStorageVp = ({ url }) => url.pathname === "/storage/vp";
+const handlerVCStorageVp = async ({ request }) => await fetchAndSaveResponse(request);
 
-const handlerVCStorageVp = async ({ url, request, event, params }) => {
-	console.log("wwWallet get verified credentials");
-	return await fetchAndSaveResponse(request);
-};
+const matchIssuersCb = ({ url }) => url.pathname === "/legal_person/issuers/all";
+const handlerIssuersCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchIssuersCb = ({ url, request, event }) => {
-	return url.pathname === "/legal_person/issuers/all";
-};
+const matchVerifiersCb = ({ url }) => url.pathname === "/verifiers/all";
+const handlerVerifiersCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const handlerIssuersCb = async ({ url, request, event, params }) => {
-	console.log("wwWallet get verified credentials");
-	return await fetchAndSaveResponse(request);
-};
-
-const matchVerifiersCb = ({ url, request, event }) => {
-	return url.pathname === "/verifiers/all";
-};
-
-const handlerVerifiersCb = async ({ url, request, event, params }) => {
-	console.log("wwWallet get verified credentials");
-	return await fetchAndSaveResponse(request);
-};
-
-const matchAccountInfoCb = ({ url, request, event }) => {
-	return url.pathname === "/user/session/account-info";
-};
-
-const handlerAccountInfoCb = async ({ url, request, event, params }) => {
-	console.log("wwWallet get verified credentials");
-	return await fetchAndSaveResponse(request);
-};
+const matchAccountInfoCb = ({ url }) => url.pathname === "/user/session/account-info";
+const handlerAccountInfoCb = async ({ request }) => await fetchAndSaveResponse(request);
 
 registerRoute(matchVCStorageCb, handlerVCStorageCb);
 registerRoute(matchVCStorageVp, handlerVCStorageVp);
