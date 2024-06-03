@@ -136,19 +136,19 @@ function isSensitiveResponse(url) {
 	return sensitiveEndpoints.some(endpoint => url.includes(endpoint));
 }
 
-const matchVCStorageCb = ({ url }) => url.pathname === "/storage/vc";
+const matchVCStorageCb = ({ url }) => url.pathname.endsWith("/storage/vc");
 const handlerVCStorageCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchVCStorageVp = ({ url }) => url.pathname === "/storage/vp";
+const matchVCStorageVp = ({ url }) => url.pathname.endsWith("/storage/vp");
 const handlerVCStorageVp = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchIssuersCb = ({ url }) => url.pathname === "/legal_person/issuers/all";
+const matchIssuersCb = ({ url }) => url.pathname.endsWith("/legal_person/issuers/all");
 const handlerIssuersCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchVerifiersCb = ({ url }) => url.pathname === "/verifiers/all";
+const matchVerifiersCb = ({ url }) => url.pathname.endsWith("/verifiers/all");
 const handlerVerifiersCb = async ({ request }) => await fetchAndSaveResponse(request);
 
-const matchAccountInfoCb = ({ url }) => url.pathname === "/user/session/account-info";
+const matchAccountInfoCb = ({ url }) => url.pathname.endsWith("/user/session/account-info");
 const handlerAccountInfoCb = async ({ request }) => await fetchAndSaveResponse(request);
 
 registerRoute(matchVCStorageCb, handlerVCStorageCb);
