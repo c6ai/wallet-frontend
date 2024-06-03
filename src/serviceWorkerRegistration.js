@@ -1,5 +1,3 @@
-// src/serviceWorkerRegistration.js
-
 const isLocalhost = Boolean(
 	window.location.hostname === 'localhost' ||
 	window.location.hostname === '[::1]' ||
@@ -12,23 +10,23 @@ export function register(config) {
 	if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
 		const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
 		if (publicUrl.origin !== window.location.origin) {
+			console.log('Service worker will not be registered due to different origin.');
 			return;
 		}
 
 		window.addEventListener('load', () => {
 			const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 			if (isLocalhost) {
-				// This is running on localhost. Let's check if a service worker still exists or not.
+				console.log('Registering service worker on localhost.');
 				checkValidServiceWorker(swUrl, config);
 
 				navigator.serviceWorker.ready.then(() => {
 					console.log(
-						'This web app is being served cache-first by a service ' +
-						'worker. To learn more, visit https://cra.link/PWA'
+						'This web app is being served cache-first by a service worker. To learn more, visit https://cra.link/PWA'
 					);
 				});
 			} else {
-				// Is not localhost. Just register service worker
+				console.log('Registering service worker on production domain.');
 				registerValidSW(swUrl, config);
 			}
 		});
@@ -39,6 +37,7 @@ function registerValidSW(swUrl, config) {
 	navigator.serviceWorker
 		.register(swUrl)
 		.then((registration) => {
+			console.log('Service worker registered with scope:', registration.scope);
 			registration.onupdatefound = () => {
 				const installingWorker = registration.installing;
 				if (installingWorker == null) {
@@ -48,8 +47,7 @@ function registerValidSW(swUrl, config) {
 					if (installingWorker.state === 'installed') {
 						if (navigator.serviceWorker.controller) {
 							console.log(
-								'New content is available and will be used when all ' +
-								'tabs for this page are closed. See https://cra.link/PWA.'
+								'New content is available and will be used when all tabs for this page are closed. See https://cra.link/PWA.'
 							);
 
 							if (config && config.onUpdate) {

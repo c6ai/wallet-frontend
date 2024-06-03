@@ -29,7 +29,6 @@ precacheAndRoute([
 	{ url: '/favicon.ico', revision: '1' },
 ]);
 
-
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
@@ -89,9 +88,13 @@ async function fetchAndSaveResponse(request) {
 		if (response.ok) {
 			const url = request.url;
 			if (isSensitiveResponse(url)) {
-				inMemoryStore[url] = await response.clone().text();
+				const responseText = await response.clone().text();
+				inMemoryStore[url] = responseText;
+				console.log(`Cached sensitive response in memory for URL: ${url}`);
 			} else {
-				saveResponseToIndexedDB(response.clone());
+				const responseText = await response.clone().text();
+				await saveResponseToIndexedDB(url, responseText);
+				console.log(`Cached response in IndexedDB for URL: ${url}`);
 			}
 			return response;
 		}
@@ -100,11 +103,13 @@ async function fetchAndSaveResponse(request) {
 		if (isSensitiveResponse(url)) {
 			const storedResponse = inMemoryStore[url];
 			if (storedResponse) {
+				console.log(`Retrieved sensitive response from memory for URL: ${url}`);
 				return new Response(storedResponse);
 			}
 		} else {
 			const responseFromIndexedDB = await getResponseFromIndexedDB(url);
 			if (responseFromIndexedDB) {
+				console.log(`Retrieved response from IndexedDB for URL: ${url}`);
 				return new Response(responseFromIndexedDB);
 			}
 		}
@@ -112,12 +117,14 @@ async function fetchAndSaveResponse(request) {
 	}
 }
 
-async function saveResponseToIndexedDB(response) {
-	return (await dbPromise).put(DB_STORAGE_VC_NAME, await response.text(), response.url);
+async function saveResponseToIndexedDB(url, responseText) {
+	const db = await dbPromise;
+	await db.put(DB_STORAGE_VC_NAME, responseText, url);
 }
 
 async function getResponseFromIndexedDB(url) {
-	return (await dbPromise).get(DB_STORAGE_VC_NAME, url);
+	const db = await dbPromise;
+	return db.get(DB_STORAGE_VC_NAME, url);
 }
 
 function isSensitiveResponse(url) {
