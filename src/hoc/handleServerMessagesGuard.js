@@ -18,89 +18,86 @@ export default function handleServerMessagesGuard(Component) {
 		const keystore = useLocalStorageKeystore();
 		const signingRequestHandlerService = SigningRequestHandlerService();
 
-		useEffect(
-			() => {
-				if (isOnline && appToken) {
-					if (!socketRef.current) {
-						console.log('Attempting to establish WebSocket connection...');
-						const socket = new WebSocket(REACT_APP_WS_URL);
-						socketRef.current = socket;
+		useEffect(() => {
+			if (isOnline && appToken) {
+				if (!socketRef.current) {
+					console.log('Attempting to establish WebSocket connection...');
+					const socket = new WebSocket(REACT_APP_WS_URL);
+					socketRef.current = socket;
 
-						const sendInit = () => {
-							console.log('WebSocket connection opened');
-							if (!appToken) {
-								console.log('No appToken available, cannot send handshake');
-								return;
+					const sendInit = () => {
+						console.log('WebSocket connection opened');
+						if (!appToken) {
+							console.log('No appToken available, cannot send handshake');
+							return;
+						}
+						console.log("Sending handshake request...");
+						socket.send(JSON.stringify({ type: "INIT", appToken: appToken }));
+						socket.removeEventListener('open', sendInit);
+					};
+
+					const awaitHandshake = (event) => {
+						try {
+							const message = JSON.parse(event.data.toString());
+							if (message?.type === "FIN_INIT") {
+								console.log("Handshake successful");
+								setHandshakeEstablished(true);
+								socket.removeEventListener('message', awaitHandshake);
+								socket.addEventListener('message', handleMessage);
 							}
-							console.log("Sending handshake request...");
-							socket.send(JSON.stringify({ type: "INIT", appToken: appToken }));
-							socket.removeEventListener('open', sendInit);
-						};
+						} catch (e) {
+							console.error("Failed to handle message during WebSocket startup", e);
+						}
+					};
 
-						const awaitHandshake = (event) => {
-							try {
-								const message = JSON.parse(event.data.toString());
-								if (message?.type === "FIN_INIT") {
-									console.log("Handshake successful");
-									setHandshakeEstablished(true);
-									socket.removeEventListener('message', awaitHandshake);
-									socket.addEventListener('message', handleMessage);
-								}
-							} catch (e) {
-								console.error("Failed to handle message during WebSocket startup", e);
+					const handleMessage = (event) => {
+						try {
+							const { message_id, request } = JSON.parse(event.data.toString());
+							if (request.action == SignatureAction.createIdToken) {
+								signingRequestHandlerService.handleCreateIdToken(socket, keystore, { message_id, ...request });
+							} else if (request.action == SignatureAction.signJwtPresentation) {
+								signingRequestHandlerService.handleSignJwtPresentation(socket, keystore, { message_id, ...request });
+							} else if (request.action == SignatureAction.generateOpenid4vciProof) {
+								signingRequestHandlerService.handleGenerateOpenid4vciProofSigningRequest(socket, keystore, { message_id, ...request });
 							}
-						};
+						} catch (e) {
+							console.error("Failed to handle message", e);
+						}
+					};
 
-						const handleMessage = (event) => {
-							try {
-								const { message_id, request } = JSON.parse(event.data.toString());
-								if (request.action == SignatureAction.createIdToken) {
-									signingRequestHandlerService.handleCreateIdToken(socket, keystore, { message_id, ...request });
-
-								} else if (request.action == SignatureAction.signJwtPresentation) {
-									signingRequestHandlerService.handleSignJwtPresentation(socket, keystore, { message_id, ...request });
-
-								} else if (request.action == SignatureAction.generateOpenid4vciProof) {
-									signingRequestHandlerService.handleGenerateOpenid4vciProofSigningRequest(socket, keystore, { message_id, ...request });
-								}
-							} catch (e) {
-								console.error("Failed to handle message", e);
-							}
-						};
-
-						socket.addEventListener('open', sendInit);
-						socket.addEventListener('message', awaitHandshake);
-					}
-
-				} else if (socketRef.current) {
-					console.log('WebSocket closing due to offline or no appToken');
-					socketRef.current.close();
-					socketRef.current = null;
-					setHandshakeEstablished(false);
+					socket.addEventListener('open', sendInit);
+					socket.addEventListener('message', awaitHandshake);
 				}
-			},
-			[appToken],
-		);
 
-		// Check for online status changes and update the state accordingly
-		window.addEventListener('online', () => {
-			console.log('User is online');
-			setIsOnline(true);
-		});
+			} else if (socketRef.current) {
+				console.log('WebSocket closing due to offline or no appToken');
+				socketRef.current.close();
+				socketRef.current = null;
+				setHandshakeEstablished(false);
+			}
+		}, [appToken, isOnline]);
 
-		window.addEventListener('offline', () => {
-			console.log('User is offline');
-			setIsOnline(false);
-		});
+		useEffect(() => {
+			const handleOnlineStatus = () => {
+				setIsOnline(navigator.onLine);
+				console.log(`User is ${navigator.onLine ? 'online' : 'offline'}`);
+			};
+
+			window.addEventListener('online', handleOnlineStatus);
+			window.addEventListener('offline', handleOnlineStatus);
+
+			return () => {
+				window.removeEventListener('online', handleOnlineStatus);
+				window.removeEventListener('offline', handleOnlineStatus);
+			};
+		}, []);
 
 		if (!isOnline || handshakeEstablished === true || !appToken) {
 			console.log('Rendering component');
 			return (<Component {...props} />);
-		}
-		else {
+		} else {
 			console.log('Rendering spinner');
 			return (<Spinner />); // loading component
 		}
-
 	};
 }
