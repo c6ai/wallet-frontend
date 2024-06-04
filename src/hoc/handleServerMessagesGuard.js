@@ -22,16 +22,17 @@ export default function handleServerMessagesGuard(Component) {
 			() => {
 				if (isOnline && appToken) {
 					if (!socketRef.current) {
+						console.log('Attempting to establish WebSocket connection...');
 						const socket = new WebSocket(REACT_APP_WS_URL);
 						socketRef.current = socket;
 
 						const sendInit = () => {
 							console.log('WebSocket connection opened');
 							if (!appToken) {
+								console.log('No appToken available, cannot send handshake');
 								return;
 							}
-							console.log("Sending...");
-							// send handshake request
+							console.log("Sending handshake request...");
 							socket.send(JSON.stringify({ type: "INIT", appToken: appToken }));
 							socket.removeEventListener('open', sendInit);
 						};
@@ -40,7 +41,7 @@ export default function handleServerMessagesGuard(Component) {
 							try {
 								const message = JSON.parse(event.data.toString());
 								if (message?.type === "FIN_INIT") {
-									console.log("init fin");
+									console.log("Handshake successful");
 									setHandshakeEstablished(true);
 									socket.removeEventListener('message', awaitHandshake);
 									socket.addEventListener('message', handleMessage);
@@ -72,7 +73,7 @@ export default function handleServerMessagesGuard(Component) {
 					}
 
 				} else if (socketRef.current) {
-					console.log('WebSocket close');
+					console.log('WebSocket closing due to offline or no appToken');
 					socketRef.current.close();
 					socketRef.current = null;
 					setHandshakeEstablished(false);
@@ -83,17 +84,21 @@ export default function handleServerMessagesGuard(Component) {
 
 		// Check for online status changes and update the state accordingly
 		window.addEventListener('online', () => {
+			console.log('User is online');
 			setIsOnline(true);
 		});
 
 		window.addEventListener('offline', () => {
+			console.log('User is offline');
 			setIsOnline(false);
 		});
 
 		if (!isOnline || handshakeEstablished === true || !appToken) {
+			console.log('Rendering component');
 			return (<Component {...props} />);
 		}
 		else {
+			console.log('Rendering spinner');
 			return (<Spinner />); // loading component
 		}
 
