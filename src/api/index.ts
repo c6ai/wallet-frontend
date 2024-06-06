@@ -74,6 +74,24 @@ export interface BackendApi {
 	useClearOnClearSession<T>(storageHandle: UseStorageHandle<T>): UseStorageHandle<T>,
 }
 
+interface AddAppTokenMessage {
+	type: 'ADD_APP_TOKEN';
+	key: string;
+	value: string | null;
+}
+
+// Function to notify service worker about session storage changes
+function notifyServiceWorker(key: string, value: string | null): void {
+	if (navigator.serviceWorker.controller) {
+		const message: AddAppTokenMessage = {
+			type: 'ADD_APP_TOKEN',
+			key: key,
+			value: value
+		};
+		navigator.serviceWorker.controller.postMessage(message);
+	}
+}
+
 export function useApi(): BackendApi {
 	const [appToken, setAppToken, clearAppToken] = useSessionStorage<string | null>("appToken", null);
 	const [sessionState, setSessionState, clearSessionState] = useSessionStorage<SessionState | null>("sessionState", null);
@@ -133,10 +151,10 @@ export function useApi(): BackendApi {
 
 			function updateShowWelcome(showWelcome: boolean): void {
 				if (sessionState) {
-						setSessionState((prevState) => ({
-								...prevState,
-								showWelcome: showWelcome,
-						}));
+					setSessionState((prevState) => ({
+						...prevState,
+						showWelcome: showWelcome,
+					}));
 				}
 			}
 
@@ -172,6 +190,7 @@ export function useApi(): BackendApi {
 					try {
 						await keystore.unlockPassword(privateData, password);
 						setSession(response, null, 'login', false);
+						notifyServiceWorker('appToken', response.data.appToken);
 						return Ok.EMPTY;
 					} catch (e) {
 						console.error("Failed to unlock local keystore", e);
@@ -198,6 +217,7 @@ export function useApi(): BackendApi {
 							privateData: jsonStringifyTaggedBinary(privateData),
 						});
 						setSession(response, null, 'signup', true);
+						notifyServiceWorker('appToken', response.data.appToken);
 						return Ok.EMPTY;
 
 					} catch (e) {
@@ -316,6 +336,8 @@ export function useApi(): BackendApi {
 									},
 								);
 								setSession(finishResp, credential, 'login', false);
+								notifyServiceWorker('appToken', finishResp.data.appToken);
+
 								return Ok.EMPTY;
 							} catch (e) {
 								console.error("Failed to open keystore", e);
@@ -399,6 +421,7 @@ export function useApi(): BackendApi {
 									},
 								});
 								setSession(finishResp, credential, 'signup', true);
+								notifyServiceWorker('appToken', finishResp.data.appToken);
 								return Ok.EMPTY;
 
 							} catch (e) {

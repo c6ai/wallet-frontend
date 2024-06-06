@@ -77,6 +77,9 @@ self.addEventListener("message", (event) => {
 	if (event.data && event.data.type === "SKIP_WAITING") {
 		self.skipWaiting();
 	}
+	if (event.data && event.data.type === 'ADD_APP_TOKEN') {
+		handleSessionStorageChange(event.data.value);
+	}
 });
 
 // In-memory store for sensitive data
@@ -156,3 +159,38 @@ registerRoute(matchVCStorageVp, handlerVCStorageVp);
 registerRoute(matchIssuersCb, handlerIssuersCb);
 registerRoute(matchVerifiersCb, handlerVerifiersCb);
 registerRoute(matchAccountInfoCb, handlerAccountInfoCb);
+
+function getBackendUrl() {
+	return process.env.REACT_APP_WALLET_BACKEND_URL;
+}
+
+async function fetchAndCache(appToken, url) {
+	const walletBackendUrl = getBackendUrl();
+	const request = new Request(`${walletBackendUrl}${url}`, {
+		headers: {
+			'Authorization': `Bearer ${appToken}`
+		}
+	});
+	return fetchAndSaveResponse(request);
+}
+
+async function handleSessionStorageChange(appToken) {
+	console.log(`Add app token:= ${appToken}`);
+
+	// List of URLs to fetch and cache
+	const urlsToFetch = [
+		'/storage/vc',
+		'/storage/vp',
+		'/legal_person/issuers/all',
+		'/verifiers/all',
+		'/user/session/account-info'
+	];
+
+	for (const url of urlsToFetch) {
+		try {
+			await fetchAndCache(appToken, url);
+		} catch (error) {
+			console.error(`Error fetching and caching data for ${url}`, error);
+		}
+	}
+}
