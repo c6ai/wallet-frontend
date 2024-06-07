@@ -64,7 +64,7 @@ const reRegisterServiceWorkerAndGetToken = async () => {
 	if ('serviceWorker' in navigator) {
 		try {
 			// Re-register the service worker
-			const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+			const registration = navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/notifications/' })
 			if (registration) {
 				console.log('Service Worker re-registered', registration);
 				const token = await requestForToken();

@@ -13,8 +13,8 @@ root.render(<App />);
 
 if ('serviceWorker' in navigator) {
 	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/firebase-messaging-sw.js')
-			.then(registration => {
+		navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/notifications/' })
+		.then(registration => {
 				console.log('App: Firebase Messaging Service Worker registered! Scope is:', registration.scope);
 			})
 			.catch(err => {
