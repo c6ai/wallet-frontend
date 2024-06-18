@@ -4,9 +4,9 @@ import { useLocalStorageKeystore } from "../services/LocalStorageKeystore";
 import Spinner from '../components/Spinner';
 import { SigningRequestHandlerService } from '../services/SigningRequestHandlers';
 import { useApi } from "../api";
+import { useOnlineStatus } from '../hooks/checkOnlineStatus';
 
 const REACT_APP_WS_URL = process.env.REACT_APP_WS_URL;
-const REACT_APP_WALLET_BACKEND_URL = process.env.REACT_APP_WALLET_BACKEND_URL;
 
 export default function handleServerMessagesGuard(Component) {
 	return (props) => {
@@ -14,44 +14,10 @@ export default function handleServerMessagesGuard(Component) {
 		const appToken = api.getAppToken();
 
 		const [handshakeEstablished, setHandshakeEstablished] = useState(false);
-		const [isOnline, setIsOnline] = useState(navigator.onLine);
 		const socketRef = useRef(null);
 		const keystore = useLocalStorageKeystore();
 		const signingRequestHandlerService = SigningRequestHandlerService();
-
-		const checkOnlineStatus = async () => {
-			try {
-				await fetch(`${REACT_APP_WALLET_BACKEND_URL}/status`, {
-					method: 'GET',
-					cache: 'no-store'
-				});
-				return true;
-			} catch (error) {
-				return false;
-			}
-		};
-
-		useEffect(() => {
-			const handleOnlineStatus = async () => {
-				const online = await checkOnlineStatus();
-				setIsOnline(online);
-				console.log(`User is ${online ? 'online' : 'offline'}`);
-			};
-
-			// Initial check
-			handleOnlineStatus();
-
-			const intervalId = setInterval(handleOnlineStatus, 5000); // check every 5 seconds
-
-			window.addEventListener('online', handleOnlineStatus);
-			window.addEventListener('offline', handleOnlineStatus);
-
-			return () => {
-				clearInterval(intervalId);
-				window.removeEventListener('online', handleOnlineStatus);
-				window.removeEventListener('offline', handleOnlineStatus);
-			};
-		}, []);
+		const isOnline = useOnlineStatus();
 
 		useEffect(() => {
 			if (isOnline && appToken) {
